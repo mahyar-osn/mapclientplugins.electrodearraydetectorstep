@@ -31,13 +31,15 @@ class TrackingTool(object):
             image_points = self._image_plane_model.convert_to_image_coordinates(key_points)
             numpy_points = np.asarray(image_points, dtype=np.float32)
             number_of_images = self._image_plane_model.get_frame_count()
-            previous_gray_image = self._processor.get_gray_image()
+            # previous_gray_image = self._processor.get_gray_image()
+            _, previous_gray_image = self._processor.get_filtered_image()
             image_index = self._key_index
             while image_index < number_of_images:
                 time = self._image_plane_model.get_time_for_frame_index(image_index)
                 file_name = self._image_plane_model.get_image_file_name_at(image_index)
                 self._process_image(file_name)
-                current_gray_image = self._processor.get_gray_image()
+                _, current_gray_image = self._processor.get_filtered_image()
+                # current_gray_image = self._processor.get_gray_image()
 
                 new_numpy_points, st, err = self._object_tracker.lk(previous_gray_image, current_gray_image, numpy_points)
                 new_image_points = [(float(point[0]), float(point[1])) for point in new_numpy_points]
@@ -51,7 +53,7 @@ class TrackingTool(object):
 
     def analyse_roi(self, image_index, zinc_sceneviewer, element, rectangle_description):
         image_roi = self._convert_to_image_roi(zinc_sceneviewer, element, rectangle_description)
-        roi_for_cv2 = [image_roi[1], image_roi[0], image_roi[3], image_roi[2]]
+        roi_for_cv2 = [image_roi[1], image_roi[0], image_roi[1]+image_roi[2], image_roi[0]+image_roi[3]]
         image_key_points = self._analyse_roi(image_index, roi_for_cv2)
         image_points = image_key_points.tolist()
         key_points = self._image_plane_model.convert_to_model_coordinates(image_points)
@@ -70,7 +72,6 @@ class TrackingTool(object):
         self._processor.mask_and_image(image_roi)
         self._processor.final_mask()
         image_points, dst = self._processor.detect_electrodes()
-
         return image_points
 
     def _convert_to_image_roi(self, scene_viewer, element, rectangle_description):
