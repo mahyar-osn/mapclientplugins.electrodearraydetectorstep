@@ -17,6 +17,7 @@ class MasterModel(object):
         }
 
         self._context = image_context_data.get_context()
+        self._image_buffer = image_context_data.get_image_file_names()
         defineStandardVisualisationTools(self._context)
         self._default_region = self._context.getDefaultRegion()
 
@@ -139,3 +140,6 @@ class MasterModel(object):
 
     def get_settings(self):
         return self._settings
+
+    def get_image_buffer(self):
+        return self._image_buffer
