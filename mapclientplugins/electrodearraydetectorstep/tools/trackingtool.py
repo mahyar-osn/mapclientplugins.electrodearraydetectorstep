@@ -15,6 +15,7 @@ class TrackingTool(object):
         self._master_model = model
         self._tracking_points_model = model.get_tracking_points_model()
         self._image_plane_model = model.get_image_plane_model()
+        self._image_buffer = model.get_image_buffer()
         self._processor = Processing()
         self._object_tracker = LKOpticalFlow(win=(20, 20), max_level=2)
         self._key_index = -1
@@ -67,7 +68,8 @@ class TrackingTool(object):
 
     def _analyse_roi(self, image_index, image_roi):
         self._key_index = image_index
-        file_name = self._image_plane_model.get_image_file_name_at(image_index)
+        # file_name = self._image_plane_model.get_image_file_name_at(image_index)
+        file_name = self._image_buffer[image_index]
         self._process_image(file_name)
         self._processor.mask_and_image(image_roi)
         self._processor.final_mask()
