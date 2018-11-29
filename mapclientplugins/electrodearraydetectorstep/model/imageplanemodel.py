@@ -81,6 +81,7 @@ class ImagePlaneModel(object):
 
     def _convert_point_coordinates(self, points):
         return [(point[0], self._image_dimensions[1] - point[1]) for point in points]
+        # return [(self._image_dimensions[0] - point[0], self._image_dimensions[1] - point[1]) for point in points]
 
     def convert_to_model_coordinates(self, image_points):
         return self._convert_point_coordinates(image_points)
@@ -102,4 +103,4 @@ class ImagePlaneModel(object):
         frame_separation = 1 / frame_count
         initial_offset = frame_separation / 2
 
-        return int((time / duration - initial_offset) / frame_separation + 0.5)
+        return int((time / duration - initial_offset) / frame_separation + 0.5) + 1
