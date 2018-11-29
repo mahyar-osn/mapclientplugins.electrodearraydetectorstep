@@ -22,10 +22,10 @@ class TrackingTool(object):
 
     def track_key_points(self):
         key_points = self._tracking_points_model.get_key_points()
-        if len(key_points):
-            if self._key_index == -1:
-                # Have to at least analyse something to set up the mask in the processor.
-                self._analyse_roi(0, (0, 0, 1, 1))
+        if len(key_points) and self._key_index != -1:
+            # if self._key_index == -1:
+            #     # Have to at least analyse something to set up the mask in the processor.
+            #     self._analyse_roi(0, (0, 0, 1, 1))
             coordinate_field = self._tracking_points_model.get_coordinate_field()
             field_module = coordinate_field.getFieldmodule()
             field_module.beginChange()
@@ -44,7 +44,8 @@ class TrackingTool(object):
 
                 new_numpy_points, st, err = self._object_tracker.lk(previous_gray_image, current_gray_image, numpy_points)
                 new_image_points = [(float(point[0]), float(point[1])) for point in new_numpy_points]
-                new_key_points = self._image_plane_model.convert_to_model_coordinates(new_image_points)
+                # new_key_points = self._image_plane_model.convert_to_model_coordinates(new_image_points)
+                new_key_points = new_image_points
                 self._tracking_points_model.set_key_points_at_time(new_key_points, time)
                 numpy_points = new_numpy_points
                 previous_gray_image = current_gray_image
@@ -54,21 +55,28 @@ class TrackingTool(object):
 
     def analyse_roi(self, image_index, zinc_sceneviewer, element, rectangle_description):
         image_roi = self._convert_to_image_roi(zinc_sceneviewer, element, rectangle_description)
-        roi_for_cv2 = [image_roi[1], image_roi[0], image_roi[1]+image_roi[2], image_roi[0]+image_roi[3]]
+        roi_for_cv2 = [image_roi[0], image_roi[1], image_roi[0]+image_roi[2], image_roi[1]+image_roi[3]]
         image_key_points = self._analyse_roi(image_index, roi_for_cv2)
         image_points = image_key_points.tolist()
         key_points = self._image_plane_model.convert_to_model_coordinates(image_points)
+        # key_points = image_points
         self._tracking_points_model.create_electrode_key_points(key_points)
+
+    def clear(self):
+        self._tracking_points_model.create_model()
+        self._master_model.get_tracking_points_scene().create_graphics()
 
     def _process_image(self, file_name):
         self._processor.read_image(file_name)
-        self._processor.rgb_and_blur_and_hsv(threshold=9)
+        self._processor.rgb_and_blur_and_hsv(threshold=3)
         self._processor.determine_electrode_mask()
         # self._processor.filter_and_threshold()
 
     def _analyse_roi(self, image_index, image_roi):
         self._key_index = image_index
+        print(self._key_index)
         # file_name = self._image_plane_model.get_image_file_name_at(image_index)
+        # temp_index = -31
         file_name = self._image_buffer[image_index]
         self._process_image(file_name)
         self._processor.mask_and_image(image_roi)
