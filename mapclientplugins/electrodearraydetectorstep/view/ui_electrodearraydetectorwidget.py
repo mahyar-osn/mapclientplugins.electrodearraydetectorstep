@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 
-# Form implementation generated from reading ui file 'mapclientplugins\electrodearraydetectorstep\qt\electrodearraydetectorwidget.ui'
+# Form implementation generated from reading ui file 'qt\electrodearraydetectorwidget.ui'
 #
-# Created: Mon Nov 12 14:24:49 2018
+# Created: Thu Nov 29 14:09:41 2018
 #      by: pyside-uic 0.2.15 running on PySide 1.2.4
 #
 # WARNING! All changes made in this file will be lost!
@@ -56,10 +56,15 @@ class Ui_ElectrodeArrayDetectorWidget(object):
         self.horizontalLayout_4.addWidget(self.trackElectrodePoints_pushButton)
         spacerItem = QtGui.QSpacerItem(40, 20, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)
         self.horizontalLayout_4.addItem(spacerItem)
-        self.formLayout.setWidget(2, QtGui.QFormLayout.SpanningRole, self.groupBox_3)
-        self.verticalLayout.addWidget(self.groupBox_2)
+        self.formLayout.setWidget(3, QtGui.QFormLayout.SpanningRole, self.groupBox_3)
+        self.reset_pushButton = QtGui.QPushButton(self.groupBox_2)
+        self.reset_pushButton.setObjectName("reset_pushButton")
+        self.formLayout.setWidget(5, QtGui.QFormLayout.LabelRole, self.reset_pushButton)
         spacerItem1 = QtGui.QSpacerItem(20, 40, QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Expanding)
-        self.verticalLayout.addItem(spacerItem1)
+        self.formLayout.setItem(4, QtGui.QFormLayout.LabelRole, spacerItem1)
+        self.verticalLayout.addWidget(self.groupBox_2)
+        spacerItem2 = QtGui.QSpacerItem(20, 40, QtGui.QSizePolicy.Minimum, QtGui.QSizePolicy.Expanding)
+        self.verticalLayout.addItem(spacerItem2)
         self.groupBox = QtGui.QGroupBox(self.controlPanel_groupBox)
         self.groupBox.setTitle("")
         self.groupBox.setObjectName("groupBox")
@@ -84,8 +89,8 @@ class Ui_ElectrodeArrayDetectorWidget(object):
         self.done_pushButton = QtGui.QPushButton(self.frame)
         self.done_pushButton.setObjectName("done_pushButton")
         self.horizontalLayout_2.addWidget(self.done_pushButton)
-        spacerItem2 = QtGui.QSpacerItem(40, 20, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)
-        self.horizontalLayout_2.addItem(spacerItem2)
+        spacerItem3 = QtGui.QSpacerItem(40, 20, QtGui.QSizePolicy.Expanding, QtGui.QSizePolicy.Minimum)
+        self.horizontalLayout_2.addItem(spacerItem3)
         self.verticalLayout.addWidget(self.frame)
         self.horizontalLayout.addWidget(self.controlPanel_groupBox)
         self.sceneviewer_widget = BaseSceneviewerWidget(ElectrodeArrayDetectorWidget)
@@ -111,7 +116,9 @@ class Ui_ElectrodeArrayDetectorWidget(object):
         self.detectElectrodes_pushButton.setText(QtGui.QApplication.translate("ElectrodeArrayDetectorWidget", "Detect electrodes", None, QtGui.QApplication.UnicodeUTF8))
         self.groupBox_3.setTitle(QtGui.QApplication.translate("ElectrodeArrayDetectorWidget", "Track electrode points", None, QtGui.QApplication.UnicodeUTF8))
         self.trackElectrodePoints_pushButton.setText(QtGui.QApplication.translate("ElectrodeArrayDetectorWidget", "Track", None, QtGui.QApplication.UnicodeUTF8))
+        self.reset_pushButton.setText(QtGui.QApplication.translate("ElectrodeArrayDetectorWidget", "Reset", None, QtGui.QApplication.UnicodeUTF8))
         self.statusText_label.setText(QtGui.QApplication.translate("ElectrodeArrayDetectorWidget", "TextLabel", None, QtGui.QApplication.UnicodeUTF8))
         self.done_pushButton.setText(QtGui.QApplication.translate("ElectrodeArrayDetectorWidget", "Done", None, QtGui.QApplication.UnicodeUTF8))
+
 
 from opencmiss.zincwidgets.basesceneviewerwidget import BaseSceneviewerWidget
