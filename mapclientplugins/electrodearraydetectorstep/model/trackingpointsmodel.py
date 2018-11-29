@@ -172,10 +172,15 @@ class TrackingPointsModel(object):
 
         return key_points
 
-    def create_model(self):
+    def clear(self):
+        self._key_points = []
         default_region = self._master_model.get_default_region()
         if self._region is not None:
             default_region.removeChild(self._region)
+
+    def create_model(self):
+        self.clear()
+        default_region = self._master_model.get_default_region()
 
         self._region = default_region.createChild('tracking')
         self._coordinate_field = create_finite_element_field(self._region)
