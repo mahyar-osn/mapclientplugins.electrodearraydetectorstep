@@ -1,3 +1,4 @@
+from __future__ import division
 
 from PySide import QtGui, QtCore
 
@@ -58,6 +59,7 @@ class ElectrodeArrayDetectorWidget(QtGui.QWidget):
         self._ui.timeLoop_checkBox.clicked.connect(self._time_loop_clicked)
         self._ui.detectElectrodes_pushButton.clicked.connect(self._detect_electrodes_button_clicked)
         self._ui.trackElectrodePoints_pushButton.clicked.connect(self._track_electrode_points_button_clicked)
+        self._ui.reset_pushButton.clicked.connect(self._reset_button_clicked)
 
     def _done_clicked(self):
         self._model.done()
@@ -88,7 +90,6 @@ class ElectrodeArrayDetectorWidget(QtGui.QWidget):
         self._enter_define_roi()
         minimum_label_width = self._calculate_minimum_label_width()
         self._ui.statusText_label.setMinimumWidth(minimum_label_width)
-        self._ui.detectElectrodes_pushButton.setEnabled(True)
         maximum_time = self._image_plane_model.get_frame_count() / self._image_plane_model.get_frames_per_second()
         self._ui.timeValue_doubleSpinBox.setMaximum(maximum_time)
         self._ui.timeValue_doubleSpinBox.setSingleStep(1 / self._image_plane_model.get_frames_per_second())
@@ -120,6 +121,11 @@ class ElectrodeArrayDetectorWidget(QtGui.QWidget):
         self._data_point_remover = DataPointRemover(QtCore.Qt.Key_D)
         self._data_point_remover.set_model(self._data_point_tool)
 
+    def _reset_button_clicked(self):
+        self._tracking_tool.clear()
+        self._leave_track_electrode_points()
+        self._enter_define_roi()
+
     def _detect_electrodes_button_clicked(self):
         self._leave_define_roi()
         self._ui.detectElectrodes_pushButton.setEnabled(False)
@@ -133,6 +139,9 @@ class ElectrodeArrayDetectorWidget(QtGui.QWidget):
     def _enter_define_roi(self):
         self._ui.sceneviewer_widget.register_handler(self._rectangle_tool)
         self._ui.sceneviewer_widget.register_key_listener(QtCore.Qt.Key_Return, self._detect_electrodes_button_clicked)
+        self._ui.detectElectrodes_pushButton.setEnabled(True)
+        self._ui.trackElectrodePoints_pushButton.setEnabled(False)
+        self._ui.reset_pushButton.setEnabled(False)
 
     def _leave_define_roi(self):
         rectangle_description = self._rectangle_tool.get_rectangle_box_description()
@@ -164,6 +173,9 @@ class ElectrodeArrayDetectorWidget(QtGui.QWidget):
         self._ui.sceneviewer_widget.register_handler(self._data_point_remover)
         self._ui.sceneviewer_widget.register_key_listener(QtCore.Qt.Key_Return,
                                                           self._track_electrode_points_button_clicked)
+        self._ui.detectElectrodes_pushButton.setEnabled(False)
+        self._ui.trackElectrodePoints_pushButton.setEnabled(True)
+        self._ui.reset_pushButton.setEnabled(True)
 
     def _leave_track_electrode_points(self):
         self._ui.sceneviewer_widget.unregister_handler(self._data_point_adder)
