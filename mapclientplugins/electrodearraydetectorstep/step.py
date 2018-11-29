@@ -14,6 +14,11 @@ from mapclientplugins.electrodearraydetectorstep.model.mastermodel import \
 from mapclientplugins.electrodearraydetectorstep.view.electrodearraydetectorwidget import \
     ElectrodeArrayDetectorWidget
 
+try:
+    FileNotFoundError
+except NameError:
+    FileNotFoundError = IOError
+
 
 class ElectrodeArrayDetectorStep(WorkflowStepMountPoint):
     """
@@ -82,6 +87,7 @@ class ElectrodeArrayDetectorStep(WorkflowStepMountPoint):
         self._doneExecution()
 
     def _get_settings_file_name(self):
+        print(os.path.join(self._location, self._config['identifier'] + '.settings'))
         return os.path.join(self._location, self._config['identifier'] + '.settings')
 
     def setPortData(self, index, dataIn):
@@ -128,10 +134,10 @@ class ElectrodeArrayDetectorStep(WorkflowStepMountPoint):
 
         if dlg.exec_():
             self._config = dlg.getConfig()
-            if self._config['output_port'] == 'fiducials':
-                self._add_or_replace_port(self._time_labelled_fiducial_marker_locations)
-            elif self._config['output_port'] == 'electrodes':
-                self._add_or_replace_port(self._time_labelled_electrode_marker_locations)
+            # if self._config['output_port'] == 'fiducials':
+            #     self._add_or_replace_port(self._time_labelled_fiducial_marker_locations)
+            # elif self._config['output_port'] == 'electrodes':
+            #     self._add_or_replace_port(self._time_labelled_electrode_marker_locations)
 
         self._configured = dlg.validate()
         self._configuredObserver()
