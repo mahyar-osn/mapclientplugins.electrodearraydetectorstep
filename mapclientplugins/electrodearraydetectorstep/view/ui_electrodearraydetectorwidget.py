@@ -10,7 +10,7 @@
 from PySide import QtCore, QtGui
 
 class Ui_ElectrodeArrayDetectorWidget(object):
-    def setupUi(self, ElectrodeArrayDetectorWidget):
+    def setupUi(self, shared_open_gl_context, ElectrodeArrayDetectorWidget):
         ElectrodeArrayDetectorWidget.setObjectName("ElectrodeArrayDetectorWidget")
         ElectrodeArrayDetectorWidget.resize(870, 576)
         self.horizontalLayout = QtGui.QHBoxLayout(ElectrodeArrayDetectorWidget)
@@ -93,7 +93,7 @@ class Ui_ElectrodeArrayDetectorWidget(object):
         self.horizontalLayout_2.addItem(spacerItem3)
         self.verticalLayout.addWidget(self.frame)
         self.horizontalLayout.addWidget(self.controlPanel_groupBox)
-        self.sceneviewer_widget = BaseSceneviewerWidget(ElectrodeArrayDetectorWidget)
+        self.sceneviewer_widget = BaseSceneviewerWidget(ElectrodeArrayDetectorWidget, shared_open_gl_context)
         sizePolicy = QtGui.QSizePolicy(QtGui.QSizePolicy.Preferred, QtGui.QSizePolicy.Preferred)
         sizePolicy.setHorizontalStretch(1)
         sizePolicy.setVerticalStretch(0)

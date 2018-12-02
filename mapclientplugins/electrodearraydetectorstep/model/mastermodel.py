@@ -17,6 +17,7 @@ class MasterModel(object):
         }
 
         self._context = image_context_data.get_context()
+        self._shareable_widget = image_context_data.get_shareable_open_gl_widget()
         self._image_buffer = image_context_data.get_image_file_names()
         defineStandardVisualisationTools(self._context)
         self._default_region = self._context.getDefaultRegion()
@@ -36,6 +37,8 @@ class MasterModel(object):
         self._image_plane_scene = ImagePlaneScene(self)
         self._tracking_points_scene = TrackingPointsScene(self)
 
+        self.set_maximum_time_value(image_context_data.get_frame_count() / image_context_data.get_frames_per_second())
+
         self._make_connections()
 
     def _make_connections(self):
@@ -53,8 +56,8 @@ class MasterModel(object):
 
         self._timekeeper.setTime(self._current_time)
         self._time_value_update(self._current_time)
-        frame_index = self._image_plane_model.get_frame_index_for_time(self._current_time) + 1
-        self.set_frame_index(frame_index)
+        # frame_index = self._image_plane_model.get_frame_index_for_time(self._current_time) + 1
+        # self.set_frame_index(frame_index)
 
     def register_frame_index_update_callback(self, frame_index_update_callback):
         self._frame_index_update = frame_index_update_callback
@@ -102,6 +105,9 @@ class MasterModel(object):
 
     def get_context(self):
         return self._context
+
+    def get_shareable_open_gl_widget(self):
+        return self._shareable_widget
 
     def get_default_region(self):
         return self._default_region
