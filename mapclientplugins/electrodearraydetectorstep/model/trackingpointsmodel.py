@@ -1,4 +1,6 @@
 
+from bisect import bisect_left
+
 from opencmiss.zinc.status import OK as CMISS_OK
 from opencmiss.utils.zinc import create_finite_element_field, create_node, AbstractNodeDataObject
 
@@ -152,11 +154,14 @@ class TrackingPointsModel(object):
 
     def create_electrode_key_points(self, key_points):
         time = self._master_model.get_timekeeper_time()
+        node_time = _get_nearest_match(self._master_model.get_time_sequence(), time)
         field_module = self._coordinate_field.getFieldmodule()
         field_module.beginChange()
         for index, key_point in enumerate(key_points):
-            node = self._create_node([float(key_point[0]), float(key_point[1]), 0.0], time, index='{0}'.format(index))
-            self._key_points.append(ElectrodeKeyPoint(node, time))
+            x = float(key_point[0])
+            y = float(key_point[1])
+            node = self._create_node([x, y, 0.0], node_time, index='{0}'.format(index))
+            self._key_points.append(ElectrodeKeyPoint(node, node_time))
         field_module.endChange()
 
     def set_key_points_at_time(self, key_points, time):
@@ -211,3 +216,22 @@ class TrackingPointsModel(object):
         selection_group = self._selection_group_field.createFieldNodeGroup(node_set)
         self._selection_group = selection_group.getNodesetGroup()
         field_module.endChange()
+
+
+def _get_nearest_match(list_of_numbers, target_number):
+    """
+    Assumes list_of_numbers is sorted. Returns closest value to target_number.
+
+    If two numbers are equally close, return the smallest number.
+    """
+    pos = bisect_left(list_of_numbers, target_number)
+    if pos == 0:
+        return list_of_numbers[0]
+    if pos == len(list_of_numbers):
+        return list_of_numbers[-1]
+    before = list_of_numbers[pos - 1]
+    after = list_of_numbers[pos]
+    if after - target_number < target_number - before:
+        return after
+    else:
+        return before

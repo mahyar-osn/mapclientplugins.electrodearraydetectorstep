@@ -49,6 +49,8 @@ class ElectrodeArrayDetectorWidget(QtGui.QWidget):
         self._set_initial_ui_state()
         self._update_ui_state()
 
+        self._load_saved_data = True
+
         self._make_connections()
 
     def _make_connections(self):
@@ -93,6 +95,7 @@ class ElectrodeArrayDetectorWidget(QtGui.QWidget):
         maximum_time = self._image_plane_model.get_frame_count() / self._image_plane_model.get_frames_per_second()
         self._ui.timeValue_doubleSpinBox.setMaximum(maximum_time)
         frame_separation = 1 / self._image_plane_model.get_frames_per_second()
+        self._ui.timeValue_doubleSpinBox.setDecimals(8)
         self._ui.timeValue_doubleSpinBox.setSingleStep(frame_separation)
         self._ui.timeValue_doubleSpinBox.setValue(frame_separation / 2)
 
@@ -162,9 +165,12 @@ class ElectrodeArrayDetectorWidget(QtGui.QWidget):
             QtGui.QApplication.restoreOverrideCursor()
             if element.isValid():
                 QtGui.QApplication.setOverrideCursor(QtCore.Qt.WaitCursor)
-                image_index = self._model.get_frame_index() - 1
-                self._tracking_tool.analyse_roi(
-                    image_index, self._ui.sceneviewer_widget.get_zinc_sceneviewer(), element, rectangle_description)
+                image_index = self._model.get_frame_index()
+                if self._load_saved_data:
+                    self._tracking_tool.load_saved_data()
+                else:
+                    self._tracking_tool.analyse_roi(
+                        image_index, self._ui.sceneviewer_widget.get_zinc_sceneviewer(), element, rectangle_description)
                 QtGui.QApplication.restoreOverrideCursor()
             else:
                 QtGui.QMessageBox.warning(self, 'Invalid ROI', 'The region of interest is invalid and region'
@@ -220,7 +226,7 @@ class ElectrodeArrayDetectorWidget(QtGui.QWidget):
         duration = frame_count / value
         self._ui.timeValue_doubleSpinBox.setMaximum(duration)
         self._model.set_maximum_time_value(duration)
-        self._model.set_frame_index(1)
+        self._model.set_frame_index(2)
 
     def _update_time_value(self, value):
         self._ui.timeValue_doubleSpinBox.blockSignals(True)

@@ -66,8 +66,7 @@ class MasterModel(object):
         self._time_value_update = time_value_update_callback
 
     def set_frame_index(self, frame_index):
-        frame_value = frame_index - 1
-        self._current_time = self._image_plane_model.get_time_for_frame_index(frame_value)
+        self._current_time = self._image_plane_model.get_time_for_frame_index(frame_index)
         self._timekeeper.setTime(self._current_time)
         self._time_value_update(self._current_time)
 
@@ -83,7 +82,7 @@ class MasterModel(object):
     def get_time_sequence(self):
         time_sequence = []
         for frame_value in range(self._image_plane_model.get_frame_count()):
-            time = self._image_plane_model.get_time_for_frame_index(frame_value)
+            time = self._image_plane_model.get_time_for_frame_index(frame_value + 1)
             time_sequence.append(time)
 
         return time_sequence

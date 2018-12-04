@@ -53,6 +53,24 @@ class TrackingTool(object):
 
             field_module.endChange()
 
+    def load_saved_data(self):
+        import json
+
+        with open(r'C:\Users\sparc\demo\data\heart\video\time_labelled_electrode_marker_locations.json') as f:
+            contents = f.read()
+            saved_data = json.loads(contents)
+
+        index_list = []
+        locations_list = []
+        for key in saved_data:
+            if key != 'time_array':
+                index_list.append(int(key) - 1)
+                locations_list.append(saved_data[key][0])
+
+        sorted_order = [i[0] for i in sorted(enumerate(index_list), key=lambda x: x[1])]
+        key_points = [locations_list[index] for index in sorted_order]
+        self._tracking_points_model.create_electrode_key_points(key_points)
+
     def analyse_roi(self, image_index, zinc_sceneviewer, element, rectangle_description):
         image_roi = self._convert_to_image_roi(zinc_sceneviewer, element, rectangle_description)
         roi_for_cv2 = [image_roi[0], image_roi[1], image_roi[0]+image_roi[2], image_roi[1]+image_roi[3]]
@@ -74,14 +92,14 @@ class TrackingTool(object):
 
     def _analyse_roi(self, image_index, image_roi):
         self._key_index = image_index
-        print(self._key_index)
+        print('key index', self._key_index)
         # file_name = self._image_plane_model.get_image_file_name_at(image_index)
         # temp_index = -31
-        file_name = self._image_buffer[image_index]
+        file_name = self._image_buffer[image_index - 1]
         self._process_image(file_name)
         self._processor.mask_and_image(image_roi)
         self._processor.final_mask()
-        image_points, dst = self._processor.detect_electrodes()
+        image_points = self._processor.detect_electrodes()
         return image_points
 
     def _convert_to_image_roi(self, scene_viewer, element, rectangle_description):

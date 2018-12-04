@@ -87,7 +87,6 @@ class ElectrodeArrayDetectorStep(WorkflowStepMountPoint):
         self._doneExecution()
 
     def _get_settings_file_name(self):
-        print(os.path.join(self._location, self._config['identifier'] + '.settings'))
         return os.path.join(self._location, self._config['identifier'] + '.settings')
 
     def setPortData(self, index, dataIn):
@@ -109,13 +108,7 @@ class ElectrodeArrayDetectorStep(WorkflowStepMountPoint):
 
         :param index: Index of the port to return.
         """
-        port_data = None
-        if index == 0:
-            port_data = self._image_context_data
-        elif index == 1:
-            port_data = self._fiducial_marker_data
-
-        return port_data
+        return self._fiducial_marker_data
 
     def configure(self):
         """
