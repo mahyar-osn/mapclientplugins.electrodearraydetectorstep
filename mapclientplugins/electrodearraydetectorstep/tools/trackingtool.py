@@ -62,14 +62,14 @@ class TrackingTool(object):
 
     def _process_image(self, file_name):
         self._processor.read_image(file_name)
-        self._processor.rgb_and_blur_and_hsv(threshold=9)
+        self._processor.rgb_and_blur_and_hsv(threshold=3)
         self._processor.determine_electrode_mask()
         # self._processor.filter_and_threshold()
 
     def _analyse_roi(self, image_index, image_roi):
         self._key_index = image_index
-        # file_name = self._image_plane_model.get_image_file_name_at(image_index)
-        file_name = self._image_buffer[image_index]
+        file_name = self._image_plane_model.get_image_file_name_at(image_index)
+        # file_name = self._image_buffer[106]
         self._process_image(file_name)
         self._processor.mask_and_image(image_roi)
         self._processor.final_mask()
