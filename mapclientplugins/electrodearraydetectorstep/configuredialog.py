@@ -34,6 +34,7 @@ class ConfigureDialog(QtWidgets.QDialog):
     def _make_connections(self):
         self._ui.identifier_lineEdit.textChanged.connect(self.validate)
         self._ui.preparedData_pushButton.clicked.connect(self._prepared_data_button_clicked)
+        self._ui.preparedData_lineEdit.textChanged.connect(self.validate)
 
     def accept(self):
         """
@@ -62,12 +63,13 @@ class ConfigureDialog(QtWidgets.QDialog):
         # The identifierOccursCount method is part of the interface to the workflow framework.
         value = self.identifierOccursCount(self._ui.identifier_lineEdit.text())
         valid = (value == 0) or (value == 1 and self._previousIdentifier == self._ui.identifier_lineEdit.text())
-        if valid:
-            self._ui.identifier_lineEdit.setStyleSheet(DEFAULT_STYLE_SHEET)
-        else:
-            self._ui.identifier_lineEdit.setStyleSheet(INVALID_STYLE_SHEET)
+        self._ui.identifier_lineEdit.setStyleSheet(DEFAULT_STYLE_SHEET if valid else INVALID_STYLE_SHEET)
 
-        return valid
+        location_valid = self._ui.preparedData_lineEdit.text() and \
+            os.path.isfile(os.path.join(self._workflow_location, self._ui.preparedData_lineEdit.text()))
+        self._ui.preparedData_lineEdit.setStyleSheet(DEFAULT_STYLE_SHEET if location_valid else INVALID_STYLE_SHEET)
+
+        return valid and location_valid
 
     def set_workflow_location(self, location):
         self._workflow_location = location
@@ -78,6 +80,7 @@ class ConfigureDialog(QtWidgets.QDialog):
         if location:
             self._previous_location = location
             self._ui.preparedData_lineEdit.setText(os.path.relpath(location, self._workflow_location))
+            self.validate()
 
     def getConfig(self):
         """
