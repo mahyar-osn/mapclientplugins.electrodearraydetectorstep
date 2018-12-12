@@ -53,10 +53,10 @@ class TrackingTool(object):
 
             field_module.endChange()
 
-    def load_saved_data(self):
+    def load_saved_data(self, file_name):
         import json
 
-        with open(r'C:\Users\sparc\demo\data\heart\video\time_labelled_electrode_marker_locations.json') as f:
+        with open(file_name) as f:
             contents = f.read()
             saved_data = json.loads(contents)
 
@@ -92,7 +92,6 @@ class TrackingTool(object):
 
     def _analyse_roi(self, image_index, image_roi):
         self._key_index = image_index
-        print('key index', self._key_index)
         # file_name = self._image_plane_model.get_image_file_name_at(image_index)
         # temp_index = -31
         file_name = self._image_buffer[image_index - 1]
@@ -116,7 +115,7 @@ class TrackingTool(object):
         y1 = rectangle_description[1]
         x2 = rectangle_description[2]
         y2 = rectangle_description[3]
-        print(x1, y1, x2, y2)
+
         coordinate_field = self._image_plane_model.get_coordinate_field()
         top_left_mesh_location = _determine_the_mesh_location(
             scene_viewer, x1, y1, element, coordinate_field)

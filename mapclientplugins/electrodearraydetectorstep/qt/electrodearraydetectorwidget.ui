@@ -108,14 +108,14 @@
            </layout>
           </widget>
          </item>
-         <item row="5" column="0">
+         <item row="6" column="0">
           <widget class="QPushButton" name="reset_pushButton">
            <property name="text">
             <string>Reset</string>
            </property>
           </widget>
          </item>
-         <item row="4" column="0">
+         <item row="5" column="0">
           <spacer name="verticalSpacer_2">
            <property name="orientation">
             <enum>Qt::Vertical</enum>
@@ -143,6 +143,41 @@
          </size>
         </property>
        </spacer>
+      </item>
+      <item>
+       <widget class="QFrame" name="frame_2">
+        <property name="frameShape">
+         <enum>QFrame::StyledPanel</enum>
+        </property>
+        <property name="frameShadow">
+         <enum>QFrame::Raised</enum>
+        </property>
+        <layout class="QHBoxLayout" name="horizontalLayout_5">
+         <item>
+          <widget class="QPushButton" name="cheat_pushButton">
+           <property name="text">
+            <string>         </string>
+           </property>
+           <property name="flat">
+            <bool>true</bool>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <spacer name="horizontalSpacer_3">
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+           <property name="sizeHint" stdset="0">
+            <size>
+             <width>104</width>
+             <height>20</height>
+            </size>
+           </property>
+          </spacer>
+         </item>
+        </layout>
+       </widget>
       </item>
       <item>
        <widget class="QGroupBox" name="groupBox">
@@ -220,7 +255,7 @@
   <customwidget>
    <class>BaseSceneviewerWidget</class>
    <extends>QWidget</extends>
-   <header>opencmiss\zincwidgets\basesceneviewerwidget.h</header>
+   <header>opencmiss/zincwidgets/basesceneviewerwidget.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

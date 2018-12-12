@@ -49,7 +49,7 @@ class ElectrodeArrayDetectorWidget(QtGui.QWidget):
         self._set_initial_ui_state()
         self._update_ui_state()
 
-        self._load_saved_data = True
+        self._prepared_data_location = ''
 
         self._make_connections()
 
@@ -62,6 +62,7 @@ class ElectrodeArrayDetectorWidget(QtGui.QWidget):
         self._ui.detectElectrodes_pushButton.clicked.connect(self._detect_electrodes_button_clicked)
         self._ui.trackElectrodePoints_pushButton.clicked.connect(self._track_electrode_points_button_clicked)
         self._ui.reset_pushButton.clicked.connect(self._reset_button_clicked)
+        self._ui.cheat_pushButton.clicked.connect(self._cheat_button_clicked)
 
     def _done_clicked(self):
         self._model.done()
@@ -98,6 +99,13 @@ class ElectrodeArrayDetectorWidget(QtGui.QWidget):
         self._ui.timeValue_doubleSpinBox.setDecimals(8)
         self._ui.timeValue_doubleSpinBox.setSingleStep(frame_separation)
         self._ui.timeValue_doubleSpinBox.setValue(frame_separation / 2)
+
+    def set_prepared_data_location(self, location):
+        self._prepared_data_location = location
+
+    def _cheat_button_clicked(self):
+        self._tracking_tool.clear()
+        self._tracking_tool.load_saved_data(self._prepared_data_location)
 
     def _calculate_minimum_label_width(self):
         label = self._ui.statusText_label
@@ -166,11 +174,8 @@ class ElectrodeArrayDetectorWidget(QtGui.QWidget):
             if element.isValid():
                 QtGui.QApplication.setOverrideCursor(QtCore.Qt.WaitCursor)
                 image_index = self._model.get_frame_index()
-                if self._load_saved_data:
-                    self._tracking_tool.load_saved_data()
-                else:
-                    self._tracking_tool.analyse_roi(
-                        image_index, self._ui.sceneviewer_widget.get_zinc_sceneviewer(), element, rectangle_description)
+                self._tracking_tool.analyse_roi(
+                    image_index, self._ui.sceneviewer_widget.get_zinc_sceneviewer(), element, rectangle_description)
                 QtGui.QApplication.restoreOverrideCursor()
             else:
                 QtGui.QMessageBox.warning(self, 'Invalid ROI', 'The region of interest is invalid and region'
