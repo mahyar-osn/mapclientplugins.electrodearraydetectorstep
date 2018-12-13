@@ -14,6 +14,11 @@ from mapclientplugins.electrodearraydetectorstep.model.mastermodel import \
 from mapclientplugins.electrodearraydetectorstep.view.electrodearraydetectorwidget import \
     ElectrodeArrayDetectorWidget
 
+try:
+    FileNotFoundError
+except NameError:
+    FileNotFoundError = IOError
+
 
 class ElectrodeArrayDetectorStep(WorkflowStepMountPoint):
     """
@@ -63,6 +68,7 @@ class ElectrodeArrayDetectorStep(WorkflowStepMountPoint):
             self._model.set_settings(all_settings['model'])
 
         self._view = ElectrodeArrayDetectorWidget(self._model)
+        self._view.set_prepared_data_location(os.path.join(self._location, self._config['location']))
         if 'view' in all_settings:
             self._view.set_settings(all_settings['view'])
 
@@ -76,7 +82,9 @@ class ElectrodeArrayDetectorStep(WorkflowStepMountPoint):
         with open(self._get_settings_file_name(), 'w') as f:
             f.write(settings_in_string_form)
 
-        self._fiducial_marker_data = self._model.get_tracking_points_model().get_key_points_description()
+        tracking_points_model = self._model.get_tracking_points_model()
+        self._fiducial_marker_data = tracking_points_model.get_key_points_description()
+        tracking_points_model.clear()
         self._view = None
         self._model = None
         self._doneExecution()
@@ -103,13 +111,7 @@ class ElectrodeArrayDetectorStep(WorkflowStepMountPoint):
 
         :param index: Index of the port to return.
         """
-        port_data = None
-        if index == 0:
-            port_data = self._image_context_data
-        elif index == 1:
-            port_data = self._fiducial_marker_data
-
-        return port_data
+        return self._fiducial_marker_data
 
     def configure(self):
         """
@@ -119,18 +121,20 @@ class ElectrodeArrayDetectorStep(WorkflowStepMountPoint):
         then set:
             self._configured = True
         """
-        dlg = ConfigureDialog(self._main_window)
+        # dlg = ConfigureDialog(self._main_window)
+        dlg = ConfigureDialog()
         dlg.identifierOccursCount = self._identifierOccursCount
+        dlg.set_workflow_location(self._location)
         dlg.setConfig(self._config)
         dlg.validate()
         dlg.setModal(True)
 
         if dlg.exec_():
             self._config = dlg.getConfig()
-            if self._config['output_port'] == 'fiducials':
-                self._add_or_replace_port(self._time_labelled_fiducial_marker_locations)
-            elif self._config['output_port'] == 'electrodes':
-                self._add_or_replace_port(self._time_labelled_electrode_marker_locations)
+            # if self._config['output_port'] == 'fiducials':
+            #     self._add_or_replace_port(self._time_labelled_fiducial_marker_locations)
+            # elif self._config['output_port'] == 'electrodes':
+            #     self._add_or_replace_port(self._time_labelled_electrode_marker_locations)
 
         self._configured = dlg.validate()
         self._configuredObserver()
@@ -171,6 +175,7 @@ class ElectrodeArrayDetectorStep(WorkflowStepMountPoint):
         self._config.update(json.loads(string))
 
         d = ConfigureDialog()
+        d.set_workflow_location(self._location)
         d.identifierOccursCount = self._identifierOccursCount
         d.setConfig(self._config)
         self._configured = d.validate()

@@ -1,16 +1,25 @@
 
+from bisect import bisect_left
+
 from opencmiss.zinc.status import OK as CMISS_OK
 from opencmiss.utils.zinc import create_finite_element_field, create_node, AbstractNodeDataObject
 
 
 class NodeCreator(AbstractNodeDataObject):
 
-    def __init__(self, coordinates):
+    def __init__(self, coordinates, index=''):
         super(NodeCreator, self).__init__(['coordinates'])
         self._coordinates = coordinates
+        self._index = index
 
     def coordinates(self):
         return self._coordinates
+
+    def index(self):
+        return self._index
+
+    def set_index(self, index):
+        self._index = index
 
 
 class KeyPoint(object):
@@ -47,8 +56,10 @@ class TrackingPointsModel(object):
         self._master_model = master_model
         self._region = None
         self._coordinate_field = None
+        self._index_field = None
         self._selection_group = None
         self._selection_group_field = None
+        self._logger = master_model.get_context().getLogger()
         self._key_points = []
 
     def get_region(self):
@@ -56,6 +67,9 @@ class TrackingPointsModel(object):
 
     def get_coordinate_field(self):
         return self._coordinate_field
+
+    def get_index_field(self):
+        return self._index_field
 
     def select_node(self, identifier):
         node = self._get_node(identifier)
@@ -70,11 +84,15 @@ class TrackingPointsModel(object):
         node = self._get_node(identifier)
         return self._selection_group.containsNode(node)
 
-    def _create_node(self, location, time):
+    def _create_node(self, location, time, index=None):
         field_module = self._coordinate_field.getFieldmodule()
         node_creator = NodeCreator(location)
         node_creator.set_time_sequence(self._master_model.get_time_sequence())
         node_creator.set_time_sequence_field_names(['coordinates'])
+        if index is not None:
+            node_creator.set_field_names(['coordinates', 'index'])
+            node_creator.set_index(index)
+            node_creator.set_time_sequence_field_names(['coordinates'])
         identifier = create_node(field_module, node_creator,
                                  node_set_name='datapoints', time=time)
 
@@ -136,11 +154,14 @@ class TrackingPointsModel(object):
 
     def create_electrode_key_points(self, key_points):
         time = self._master_model.get_timekeeper_time()
+        node_time = _get_nearest_match(self._master_model.get_time_sequence(), time)
         field_module = self._coordinate_field.getFieldmodule()
         field_module.beginChange()
-        for key_point in key_points:
-            node = self._create_node([float(key_point[0]), float(key_point[1]), 0.0], time)
-            self._key_points.append(ElectrodeKeyPoint(node, time))
+        for index, key_point in enumerate(key_points):
+            x = float(key_point[0])
+            y = float(key_point[1])
+            node = self._create_node([x, y, 0.0], node_time, index='{0}'.format(index))
+            self._key_points.append(ElectrodeKeyPoint(node, node_time))
         field_module.endChange()
 
     def set_key_points_at_time(self, key_points, time):
@@ -172,20 +193,45 @@ class TrackingPointsModel(object):
 
         return key_points
 
-    def create_model(self):
+    def clear(self):
+        self._key_points = []
         default_region = self._master_model.get_default_region()
         if self._region is not None:
             default_region.removeChild(self._region)
+
+    def create_model(self):
+        self.clear()
+        default_region = self._master_model.get_default_region()
 
         self._region = default_region.createChild('tracking')
         self._coordinate_field = create_finite_element_field(self._region)
 
         field_module = self._region.getFieldmodule()
         field_module.beginChange()
+        self._index_field = field_module.createFieldStoredString()
+        self._index_field.setName('index')
         node_set = field_module.findNodesetByName('datapoints')
-
         # Setup the selection fields
         self._selection_group_field = field_module.createFieldGroup()
         selection_group = self._selection_group_field.createFieldNodeGroup(node_set)
         self._selection_group = selection_group.getNodesetGroup()
         field_module.endChange()
+
+
+def _get_nearest_match(list_of_numbers, target_number):
+    """
+    Assumes list_of_numbers is sorted. Returns closest value to target_number.
+
+    If two numbers are equally close, return the smallest number.
+    """
+    pos = bisect_left(list_of_numbers, target_number)
+    if pos == 0:
+        return list_of_numbers[0]
+    if pos == len(list_of_numbers):
+        return list_of_numbers[-1]
+    before = list_of_numbers[pos - 1]
+    after = list_of_numbers[pos]
+    if after - target_number < target_number - before:
+        return after
+    else:
+        return before

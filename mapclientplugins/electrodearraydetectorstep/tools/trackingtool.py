@@ -22,10 +22,10 @@ class TrackingTool(object):
 
     def track_key_points(self):
         key_points = self._tracking_points_model.get_key_points()
-        if len(key_points):
-            if self._key_index == -1:
-                # Have to at least analyse something to set up the mask in the processor.
-                self._analyse_roi(0, (0, 0, 1, 1))
+        if len(key_points) and self._key_index != -1:
+            # if self._key_index == -1:
+            #     # Have to at least analyse something to set up the mask in the processor.
+            #     self._analyse_roi(0, (0, 0, 1, 1))
             coordinate_field = self._tracking_points_model.get_coordinate_field()
             field_module = coordinate_field.getFieldmodule()
             field_module.beginChange()
@@ -44,7 +44,8 @@ class TrackingTool(object):
 
                 new_numpy_points, st, err = self._object_tracker.lk(previous_gray_image, current_gray_image, numpy_points)
                 new_image_points = [(float(point[0]), float(point[1])) for point in new_numpy_points]
-                new_key_points = self._image_plane_model.convert_to_model_coordinates(new_image_points)
+                # new_key_points = self._image_plane_model.convert_to_model_coordinates(new_image_points)
+                new_key_points = new_image_points
                 self._tracking_points_model.set_key_points_at_time(new_key_points, time)
                 numpy_points = new_numpy_points
                 previous_gray_image = current_gray_image
@@ -52,13 +53,36 @@ class TrackingTool(object):
 
             field_module.endChange()
 
+    def load_saved_data(self, file_name):
+        import json
+
+        with open(file_name) as f:
+            contents = f.read()
+            saved_data = json.loads(contents)
+
+        index_list = []
+        locations_list = []
+        for key in saved_data:
+            if key != 'time_array':
+                index_list.append(int(key) - 1)
+                locations_list.append(saved_data[key][0])
+
+        sorted_order = [i[0] for i in sorted(enumerate(index_list), key=lambda x: x[1])]
+        key_points = [locations_list[index] for index in sorted_order]
+        self._tracking_points_model.create_electrode_key_points(key_points)
+
     def analyse_roi(self, image_index, zinc_sceneviewer, element, rectangle_description):
         image_roi = self._convert_to_image_roi(zinc_sceneviewer, element, rectangle_description)
-        roi_for_cv2 = [image_roi[1], image_roi[0], image_roi[1]+image_roi[2], image_roi[0]+image_roi[3]]
+        roi_for_cv2 = [image_roi[0], image_roi[1], image_roi[0]+image_roi[2], image_roi[1]+image_roi[3]]
         image_key_points = self._analyse_roi(image_index, roi_for_cv2)
         image_points = image_key_points.tolist()
         key_points = self._image_plane_model.convert_to_model_coordinates(image_points)
+        # key_points = image_points
         self._tracking_points_model.create_electrode_key_points(key_points)
+
+    def clear(self):
+        self._tracking_points_model.create_model()
+        self._master_model.get_tracking_points_scene().create_graphics()
 
     def _process_image(self, file_name):
         self._processor.read_image(file_name)
@@ -68,12 +92,13 @@ class TrackingTool(object):
 
     def _analyse_roi(self, image_index, image_roi):
         self._key_index = image_index
-        file_name = self._image_plane_model.get_image_file_name_at(image_index)
-        # file_name = self._image_buffer[106]
+        # file_name = self._image_plane_model.get_image_file_name_at(image_index)
+        # temp_index = -31
+        file_name = self._image_buffer[image_index - 1]
         self._process_image(file_name)
         self._processor.mask_and_image(image_roi)
         self._processor.final_mask()
-        image_points, dst = self._processor.detect_electrodes()
+        image_points = self._processor.detect_electrodes()
         return image_points
 
     def _convert_to_image_roi(self, scene_viewer, element, rectangle_description):
@@ -90,7 +115,7 @@ class TrackingTool(object):
         y1 = rectangle_description[1]
         x2 = rectangle_description[2]
         y2 = rectangle_description[3]
-        print(x1, y1, x2, y2)
+
         coordinate_field = self._image_plane_model.get_coordinate_field()
         top_left_mesh_location = _determine_the_mesh_location(
             scene_viewer, x1, y1, element, coordinate_field)

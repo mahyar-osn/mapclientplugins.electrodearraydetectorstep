@@ -1,3 +1,4 @@
+from __future__ import division
 
 from PySide import QtGui, QtCore
 
@@ -22,7 +23,7 @@ class ElectrodeArrayDetectorWidget(QtGui.QWidget):
     def __init__(self, model, parent=None):
         super(ElectrodeArrayDetectorWidget, self).__init__(parent)
         self._ui = Ui_ElectrodeArrayDetectorWidget()
-        self._ui.setupUi(self)
+        self._ui.setupUi(model.get_shareable_open_gl_widget(), self)
         self._ui.sceneviewer_widget.set_context(model.get_context())
 
         self._settings = {'view-parameters': {}}
@@ -48,6 +49,8 @@ class ElectrodeArrayDetectorWidget(QtGui.QWidget):
         self._set_initial_ui_state()
         self._update_ui_state()
 
+        self._prepared_data_location = ''
+
         self._make_connections()
 
     def _make_connections(self):
@@ -58,6 +61,8 @@ class ElectrodeArrayDetectorWidget(QtGui.QWidget):
         self._ui.timeLoop_checkBox.clicked.connect(self._time_loop_clicked)
         self._ui.detectElectrodes_pushButton.clicked.connect(self._detect_electrodes_button_clicked)
         self._ui.trackElectrodePoints_pushButton.clicked.connect(self._track_electrode_points_button_clicked)
+        self._ui.reset_pushButton.clicked.connect(self._reset_button_clicked)
+        self._ui.cheat_pushButton.clicked.connect(self._cheat_button_clicked)
 
     def _done_clicked(self):
         self._model.done()
@@ -88,10 +93,19 @@ class ElectrodeArrayDetectorWidget(QtGui.QWidget):
         self._enter_define_roi()
         minimum_label_width = self._calculate_minimum_label_width()
         self._ui.statusText_label.setMinimumWidth(minimum_label_width)
-        self._ui.detectElectrodes_pushButton.setEnabled(True)
         maximum_time = self._image_plane_model.get_frame_count() / self._image_plane_model.get_frames_per_second()
         self._ui.timeValue_doubleSpinBox.setMaximum(maximum_time)
-        self._ui.timeValue_doubleSpinBox.setSingleStep(1 / self._image_plane_model.get_frames_per_second())
+        frame_separation = 1 / self._image_plane_model.get_frames_per_second()
+        self._ui.timeValue_doubleSpinBox.setDecimals(8)
+        self._ui.timeValue_doubleSpinBox.setSingleStep(frame_separation)
+        self._ui.timeValue_doubleSpinBox.setValue(frame_separation / 2)
+
+    def set_prepared_data_location(self, location):
+        self._prepared_data_location = location
+
+    def _cheat_button_clicked(self):
+        self._tracking_tool.clear()
+        self._tracking_tool.load_saved_data(self._prepared_data_location)
 
     def _calculate_minimum_label_width(self):
         label = self._ui.statusText_label
@@ -120,6 +134,11 @@ class ElectrodeArrayDetectorWidget(QtGui.QWidget):
         self._data_point_remover = DataPointRemover(QtCore.Qt.Key_D)
         self._data_point_remover.set_model(self._data_point_tool)
 
+    def _reset_button_clicked(self):
+        self._tracking_tool.clear()
+        self._leave_track_electrode_points()
+        self._enter_define_roi()
+
     def _detect_electrodes_button_clicked(self):
         self._leave_define_roi()
         self._ui.detectElectrodes_pushButton.setEnabled(False)
@@ -133,6 +152,9 @@ class ElectrodeArrayDetectorWidget(QtGui.QWidget):
     def _enter_define_roi(self):
         self._ui.sceneviewer_widget.register_handler(self._rectangle_tool)
         self._ui.sceneviewer_widget.register_key_listener(QtCore.Qt.Key_Return, self._detect_electrodes_button_clicked)
+        self._ui.detectElectrodes_pushButton.setEnabled(True)
+        self._ui.trackElectrodePoints_pushButton.setEnabled(False)
+        self._ui.reset_pushButton.setEnabled(False)
 
     def _leave_define_roi(self):
         rectangle_description = self._rectangle_tool.get_rectangle_box_description()
@@ -151,7 +173,7 @@ class ElectrodeArrayDetectorWidget(QtGui.QWidget):
             QtGui.QApplication.restoreOverrideCursor()
             if element.isValid():
                 QtGui.QApplication.setOverrideCursor(QtCore.Qt.WaitCursor)
-                image_index = self._model.get_frame_index() - 1
+                image_index = self._model.get_frame_index()
                 self._tracking_tool.analyse_roi(
                     image_index, self._ui.sceneviewer_widget.get_zinc_sceneviewer(), element, rectangle_description)
                 QtGui.QApplication.restoreOverrideCursor()
@@ -164,6 +186,9 @@ class ElectrodeArrayDetectorWidget(QtGui.QWidget):
         self._ui.sceneviewer_widget.register_handler(self._data_point_remover)
         self._ui.sceneviewer_widget.register_key_listener(QtCore.Qt.Key_Return,
                                                           self._track_electrode_points_button_clicked)
+        self._ui.detectElectrodes_pushButton.setEnabled(False)
+        self._ui.trackElectrodePoints_pushButton.setEnabled(True)
+        self._ui.reset_pushButton.setEnabled(True)
 
     def _leave_track_electrode_points(self):
         self._ui.sceneviewer_widget.unregister_handler(self._data_point_adder)
@@ -206,7 +231,7 @@ class ElectrodeArrayDetectorWidget(QtGui.QWidget):
         duration = frame_count / value
         self._ui.timeValue_doubleSpinBox.setMaximum(duration)
         self._model.set_maximum_time_value(duration)
-        self._model.set_frame_index(1)
+        self._model.set_frame_index(2)
 
     def _update_time_value(self, value):
         self._ui.timeValue_doubleSpinBox.blockSignals(True)
