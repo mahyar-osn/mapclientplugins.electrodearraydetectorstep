@@ -1,4 +1,4 @@
-from __future__ import division
+# from __future__ import division
 
 from PySideX import QtCore
 from opencmiss.utils.zinc import defineStandardVisualisationTools
