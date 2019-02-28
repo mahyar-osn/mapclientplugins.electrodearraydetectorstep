@@ -1,6 +1,6 @@
-from __future__ import division
+# from __future__ import division
 
-from opencmiss.utils.maths.algorithms import calculate_line_plane_intersection
+from opencmiss.utils.maths.algorithms import calculateLinePlaneIntersection
 
 
 class ImagePlaneModel(object):
@@ -77,7 +77,7 @@ class ImagePlaneModel(object):
 
     @staticmethod
     def get_intersection_point(ray):
-        return calculate_line_plane_intersection(ray[0], ray[1], [0.0, 0.0, 0.0], [0.0, 0.0, 1.0])
+        return calculateLinePlaneIntersection(ray[0], ray[1], [0.0, 0.0, 0.0], [0.0, 0.0, 1.0])
 
     def _convert_point_coordinates(self, points):
         return [(point[0], self._image_dimensions[1] - point[1]) for point in points]
