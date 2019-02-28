@@ -1,8 +1,8 @@
 
 import numpy as np
 
-from sparc.videotracking.processing import Processing
-from sparc.videotracking.lkopticalflow import LKOpticalFlow
+from sparc.videoprocessing.processing import Processing
+from sparc.videoprocessing.lkopticalflow import LKOpticalFlow
 
 from opencmiss.zinc.scenecoordinatesystem import SCENECOORDINATESYSTEM_LOCAL, \
     SCENECOORDINATESYSTEM_WINDOW_PIXEL_TOP_LEFT
