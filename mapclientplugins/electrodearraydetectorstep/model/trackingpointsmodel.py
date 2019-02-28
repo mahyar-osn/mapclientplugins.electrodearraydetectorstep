@@ -2,7 +2,7 @@
 from bisect import bisect_left
 
 from opencmiss.zinc.status import OK as CMISS_OK
-from opencmiss.utils.zinc import create_finite_element_field, create_node, AbstractNodeDataObject
+from opencmiss.utils.zinc import createFiniteElementField, createNodes, AbstractNodeDataObject
 
 
 class NodeCreator(AbstractNodeDataObject):
@@ -93,7 +93,7 @@ class TrackingPointsModel(object):
             node_creator.set_field_names(['coordinates', 'index'])
             node_creator.set_index(index)
             node_creator.set_time_sequence_field_names(['coordinates'])
-        identifier = create_node(field_module, node_creator,
+        identifier = createNodes(field_module, node_creator,
                                  node_set_name='datapoints', time=time)
 
         return self._get_node(identifier)
@@ -204,7 +204,7 @@ class TrackingPointsModel(object):
         default_region = self._master_model.get_default_region()
 
         self._region = default_region.createChild('tracking')
-        self._coordinate_field = create_finite_element_field(self._region)
+        self._coordinate_field = createFiniteElementField(self._region)
 
         field_module = self._region.getFieldmodule()
         field_module.beginChange()
